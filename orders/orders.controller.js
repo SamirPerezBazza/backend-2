@@ -3,35 +3,29 @@ import Products from '../products/products.model.js';
 
 export const createOrder = async (req, res) => {
   try {
-    const { client, restaurant, products: productList } = req.body;
+    const { client, seller, product, amount, comments = '' } = req.body;
 
-    //products: {id: "1", quantity: 2}
-    const productIds = productList.map((product) => product.id);
+    if (client !== req.userId) return res.status(403).json({ message: 'Forbidden' });
 
-    const products = await Products.find({ _id: { $in: productIds } }).lean();
+    if (!client) return res.status(400).json({ message: 'Client is required' });
+    if (!seller) return res.status(400).json({ message: 'Seller is required' });
+    if (!product) return res.status(400).json({ message: 'Product is required' });
+    if (!amount) return res.status(400).json({ message: 'Amount is required' });
 
-    if (!products) {
-      return res.status(404).json({ message: `Products not found` });
-    }
+    const dbProduct = await Products.findById(product);
 
-    const mappedProducts = products.map((product) => ({
-      ...product,
-      quantity: productList.find((p) => p.id == product._id).quantity,
-    }));
-
-    const total = mappedProducts.reduce(
-      (acc, product) => acc + product.price * product.quantity,
-      0
-    );
+    const total = dbProduct.price * amount;
 
     const order = await Orders.create({
       client,
-      restaurant,
+      seller,
       total,
-      products: mappedProducts,
+      product,
+      amount,
+      comments,
     });
 
-    return res.status(201).json({ message: 'Order created' });
+    return res.status(201).json({ message: 'Order created', order });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -42,6 +36,9 @@ export const getOrder = async (req, res) => {
     const { id } = req.params;
 
     const order = await Orders.findById(id);
+
+    if (order.client.toString() !== req.userId)
+      return res.status(403).json({ message: 'Forbidden' });
 
     if (!order) {
       return res.status(404).json({ message: `Order ${id} not found` });
@@ -55,14 +52,23 @@ export const getOrder = async (req, res) => {
 
 export const getOrders = async (req, res) => {
   try {
-    const orders = await Orders.find();
+    const { client, startDate, endDate } = req.query;
 
-    if (!orders) {
-      return res.status(404).json({ message: `Orders not found` });
-    }
-    const filteredOrders = orders.filter((order) => order.status == 0);
+    let searchValues = [];
+    const createdAt = {};
 
-    return res.status(200).json(filteredOrders);
+    console.log(endDate);
+
+    if (client) searchValues.push({ client });
+    if (startDate) createdAt['$gte'] = new Date(`${startDate}T00:00:00.000Z`);
+    if (endDate) createdAt['$lte'] = new Date(`${endDate}T23:59:59.999Z`);
+    if (startDate || endDate) searchValues.push({ createdAt });
+
+    console.log(createdAt);
+
+    const orders = await Orders.find(searchValues.length > 0 ? { $or: searchValues } : {});
+
+    return res.status(200).json(orders);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -70,13 +76,9 @@ export const getOrders = async (req, res) => {
 
 export const updateOrder = async (req, res) => {
   try {
-    const { id, status, products: productList = [], ...otherValues } = req.body;
-    // use bits 1 | 2 | 4 | 8 | 16
-    // 0: pending
-    // 1: accepted
-    // 2: ready for pickup
-    // 3: on the way
-    // 4: delivered
+    const { id, client, seller, ...otherValues } = req.body;
+
+    if (client !== req.userId) return res.status(403).json({ message: 'Forbidden' });
 
     const order = await Orders.findById(id);
 
@@ -86,83 +88,58 @@ export const updateOrder = async (req, res) => {
     }
 
     // Order already cancelled
-    if (order.status == 5) {
+    if (order.status === 4) {
       return res.status(403).json({ message: `Order ${id} has been cancelled` });
     }
 
-    if (order.status == 4) {
+    if (order.status === 3) {
       return res.status(403).json({ message: `Order ${id} has been delivered` });
     }
 
-    // Order immutable once sent
-    if (order.status >= 3 && productList?.length > 1) {
-      return res.status(403).json({ message: `Order cannot be changed once sent` });
-    }
-
-    // Order cannot be set to "on the way" without a delivery person
-    if (status == 3 && !order.dasher) {
-      return res.status(403).json({ message: `Order cannot be sent without a delivery person` });
-    }
-
-    const productIds = productList.map((product) => product.id);
-
-    const products = await Products.find({ _id: { $in: productIds } }).lean();
-
-    if (!products) {
-      return res.status(404).json({ message: `Products not found` });
-    }
-
-    const mappedProducts = products.map((product) => ({
-      ...product,
-      quantity: productList.find((p) => p.id == product._id).quantity,
-    }));
-
-    const total = mappedProducts.reduce(
-      (acc, product) => acc + product.price * product.quantity,
-      0
+    const updatedOrder = await Orders.findByIdAndUpdate(
+      id,
+      {
+        ...otherValues,
+      },
+      { new: true }
     );
 
-    const updatedOrder = await Orders.findByIdAndUpdate(id, {
-      status,
-      products: status < 3 ? mappedProducts : order.products,
-      total: status < 3 ? total : order.total,
-      ...otherValues,
-    });
-
-    return res.status(200).json({ message: `Order ${id} updated successfully` });
+    return res
+      .status(200)
+      .json({ message: `Order ${id} updated successfully`, order: updatedOrder });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
 
-export const disableProducts = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { productId } = req.query;
+// export const disableProducts = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const { productId } = req.query;
 
-    const currentOrder = await Orders.findById(id).lean();
+//     const currentOrder = await Orders.findById(id).lean();
 
-    if (!currentOrder) {
-      return res.status(403).json({ message: `Order ${id} not found` });
-    }
+//     if (!currentOrder) {
+//       return res.status(403).json({ message: `Order ${id} not found` });
+//     }
 
-    if (currentOrder.status >= 3) {
-      return res.status(403).json({
-        message: `Products cannot be changed once the order has been sent, delivered or canceled`,
-      });
-    }
+//     if (currentOrder.status >= 3) {
+//       return res.status(403).json({
+//         message: `Products cannot be changed once the order has been sent, delivered or canceled`,
+//       });
+//     }
 
-    const newProducts = currentOrder.products.map((product) => ({
-      ...product,
-      enabled: product._id.toString() !== productId,
-    }));
+//     const newProducts = currentOrder.products.map((product) => ({
+//       ...product,
+//       enabled: product._id.toString() !== productId,
+//     }));
 
-    const order = await Orders.findByIdAndUpdate(id, {
-      products: newProducts,
-    });
+//     const order = await Orders.findByIdAndUpdate(id, {
+//       products: newProducts,
+//     });
 
-    return res.status(200).json({ message: `Product ${productId} disabled successfully` });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
+//     return res.status(200).json({ message: `Product ${productId} disabled successfully` });
+//   } catch (error) {
+//     return res.status(500).json({ message: error.message });
+//   }
+// };

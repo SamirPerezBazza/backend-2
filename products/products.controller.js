@@ -33,7 +33,9 @@ export const getProducts = async (req, res) => {
     if (category) searchValues.push({ category });
     if (search) searchValues.push({ name: { $regex: search || '', $options: 'i' } });
 
-    const products = await Product.find(searchValues.length > 0 ? { $or: searchValues } : {});
+    const products = await Product.find(searchValues.length > 0 ? { $or: searchValues } : {}).sort({
+      rating: -1,
+    });
     if (!products) {
       return res.status(404).json({ message: `Products not found` });
     }
@@ -45,7 +47,9 @@ export const getProducts = async (req, res) => {
 
 export const getProductCategories = async (req, res) => {
   try {
-    const categories = await Product.find({ userId: req.params.id }).distinct('category');
+    const categories = await Product.find({ userId: req.params.id }).distinct('category').sort({
+      rating: -1,
+    });
     if (!categories) {
       return res.status(404).json({ message: `Categories not found` });
     }

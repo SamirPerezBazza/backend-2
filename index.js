@@ -29,34 +29,6 @@ mongoose
 app.use(cors());
 app.use(express.json());
 
-/* function unless(pred, middleware) {
-  return (req, res, next) => {
-    if (pred(req)) {
-      next(); // Skip this middleware.
-    } else {
-      middleware(req, res, next); // Allow this middleware.
-    }
-  };
-} */
-// ignore maths from auth middleware
-const unless = function (paths, middleware) {
-  return function (req, res, next) {
-    const pathCheck = paths.some((path) => path.path === req.path && path.method === req.method);
-    pathCheck ? next() : middleware(req, res, next);
-  };
-};
-
-/* app.use(
-  unless(
-    [
-      { path: '/users', method: 'POST' },
-      { path: '/users/login', method: 'POST' },
-      { path: '/users/:id', method: 'GET' },
-    ],
-    authMiddleware
-  )
-); */
-
 app.use('/users', userRoutes);
 app.use('/products', productRoutes);
 app.use('/orders', orderRoutes);

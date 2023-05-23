@@ -5,11 +5,6 @@ const STATUS_CODES = [0, 1, 2, 3, 4];
 
 const orderSchema = mongoose.Schema(
   {
-    purchaseDate: {
-      type: Date,
-      required: true,
-      immutable: true,
-    },
     client: {
       type: Types.ObjectId,
       ref: 'user',
@@ -24,6 +19,7 @@ const orderSchema = mongoose.Schema(
     },
     product: {
       type: Types.ObjectId,
+      ref: 'product',
       required: true,
       inmmutable: true,
     },
@@ -39,6 +35,13 @@ const orderSchema = mongoose.Schema(
     total: {
       type: Number,
       required: true,
+    },
+    comments: {
+      type: String,
+    },
+    rating: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
