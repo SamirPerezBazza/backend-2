@@ -51,6 +51,14 @@ export async function getUserCount(req, res) {
 
 export async function createUser(req, res) {
   try {
+    const { email } = req.body;
+
+    const userExist = await User.findOne({ $or: [{ email: email }] });
+
+    if (userExist) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
     const result = await User.create({ ...req.body });
     res.status(200).json(result);
   } catch (err) {
