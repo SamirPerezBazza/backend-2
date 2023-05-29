@@ -40,3 +40,5 @@ app.use((req, res) => {
 
 // Inicia app en puerto 8080
 app.listen(8080);
+
+export default app;
