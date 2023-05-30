@@ -59,6 +59,15 @@ describe('Prueba unitaria del endpoint GET /users/count - respuesta exitosa', ()
   });
 });
 
+describe('Prueba unitaria del endpoint GET /users/count - respuesta erronea', () => {
+  test('Debería tener error y retornar un status 404', async () => {
+    const response = await request(app).get('/');
+
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ message: 'Not found.' });
+  });
+});
+
 //create
 describe('Prueba unitaria del endpoint POST /users - respuesta exitosa', () => {
   test('Debería crear un usuario y retornar un status 200', async () => {

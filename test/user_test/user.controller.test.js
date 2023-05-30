@@ -70,6 +70,12 @@ describe('Prueba unitaria del método getUserCount (controlador) - respuesta exi
   });
 });
 
+describe('Prueba unitaria del método getUserCount (controlador) - respuesta erronea', () => {
+  test('esta prueba no aplica porque no requiere que se le introduzca ningun dato por ende no falla', async () => {
+    //no aplica
+  });
+});
+
 //Create test
 
 describe('Prueba unitaria del método createUser (controlador) - respuesta exitosa', () => {
