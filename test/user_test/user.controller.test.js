@@ -1,4 +1,3 @@
-import userModel from '../../users/user.model';
 const testConfig = require('../../testConfig');
 beforeAll(async () => {
   await testConfig.setupDatabase();

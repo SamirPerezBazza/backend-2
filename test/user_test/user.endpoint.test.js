@@ -1,13 +1,28 @@
 const request = require('supertest');
-const testConfig = require('../../testConfig');
+const testConfig = require('../../testConfig.js');
 beforeAll(async () => {
   await testConfig.setupDatabase();
 });
 import app from '../../index.js';
+const http = require('http');
+//create
 
+let server;
+beforeAll((done) => {
+  const port = 8081;
+  server = http.createServer(app);
+  server.listen(port, () => {
+    console.log(`Servidor Express iniciado en el puerto ${port}`);
+    done();
+  });
+});
+
+afterAll((done) => {
+  server.close(done);
+});
 //read
 
-describe('Prueba unitaria del endpoint GET /api/users/:id - respuesta exitosa', () => {
+describe('Prueba unitaria del endpoint GET /users/:id - respuesta exitosa', () => {
   test('Debería obtener el usuario y retornar un status 200', async () => {
     const response = await request(app).get('/users/6473c9c21291c91d965b1d22');
 
@@ -26,7 +41,7 @@ describe('Prueba unitaria del endpoint GET /api/users/:id - respuesta exitosa', 
   });
 });
 
-describe('Prueba unitaria del endpoint GET /api/users/:id - respuesta errónea', () => {
+describe('Prueba unitaria del endpoint GET /users/:id - respuesta errónea', () => {
   test('Debería retornar un status 500 con un mensaje de error', async () => {
     const response = await request(app).get('/users/123');
 
@@ -35,7 +50,7 @@ describe('Prueba unitaria del endpoint GET /api/users/:id - respuesta errónea',
   });
 });
 
-describe('Prueba unitaria del endpoint GET /api/users/count - respuesta exitosa', () => {
+describe('Prueba unitaria del endpoint GET /users/count - respuesta exitosa', () => {
   test('Debería obtener el número de usuarios y retornar un status 200', async () => {
     const response = await request(app).get('/users/count');
 
@@ -45,7 +60,7 @@ describe('Prueba unitaria del endpoint GET /api/users/count - respuesta exitosa'
 });
 
 //create
-describe('Prueba unitaria del endpoint POST /api/users - respuesta exitosa', () => {
+describe('Prueba unitaria del endpoint POST /users - respuesta exitosa', () => {
   test('Debería crear un usuario y retornar un status 200', async () => {
     const response = await request(app).post('/users/').send({
       email: 'test@example.com',
@@ -69,7 +84,7 @@ describe('Prueba unitaria del endpoint POST /api/users - respuesta exitosa', () 
     );
   });
 });
-describe('Prueba unitaria del endpoint POST /api/users - respuesta errónea', () => {
+describe('Prueba unitaria del endpoint POST /users - respuesta errónea', () => {
   test('Debería retornar un status 500 con un mensaje de error', async () => {
     const response = await request(app).post('/users/').send({
       email: 'test@example.com',
@@ -83,7 +98,7 @@ describe('Prueba unitaria del endpoint POST /api/users - respuesta errónea', ()
 
 //update
 
-describe('Prueba unitaria del endpoint PATCH /api/users/:id - respuesta exitosa', () => {
+describe('Prueba unitaria del endpoint PUT /users/:id - respuesta exitosa', () => {
   test('Debería actualizar el usuario y retornar un status 200', async () => {
     const token =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDcxNWIyYTM1N2Q2M2FkZDBiMTc2NDYiLCJpYXQiOjE2ODUyMjcwMDl9.FMlruRjos6q7CLW7eB-ir9ZkquCQNypmoXijWYc4Vn4';
@@ -113,7 +128,7 @@ describe('Prueba unitaria del endpoint PATCH /api/users/:id - respuesta exitosa'
   });
 });
 
-describe('Prueba unitaria del endpoint PATCH /api/users/:id - respuesta errónea', () => {
+describe('Prueba unitaria del endpoint PUT /users/:id - respuesta errónea', () => {
   test('Debería retornar un status 500 con un mensaje de error', async () => {
     const token =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDcxNWIyYTM1N2Q2M2FkZDBiMTc2NDYiLCJpYXQiOjE2ODUyMjcwMDl9.FMlruRjos6q7CLW7eB-ir9ZkquCQNypmoXijWYc4Vn4';
@@ -132,7 +147,7 @@ describe('Prueba unitaria del endpoint PATCH /api/users/:id - respuesta errónea
 
 //delete
 
-describe('Prueba unitaria del endpoint DELETE /api/users/:id - respuesta exitosa', () => {
+describe('Prueba unitaria del endpoint DELETE /users/:id - respuesta exitosa', () => {
   test('Debería deshabilitar el usuario y retornar un status 200', async () => {
     const token =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDcxNWIyYTM1N2Q2M2FkZDBiMTc2NDYiLCJpYXQiOjE2ODUyMjcwMDl9.FMlruRjos6q7CLW7eB-ir9ZkquCQNypmoXijWYc4Vn4';
@@ -145,7 +160,7 @@ describe('Prueba unitaria del endpoint DELETE /api/users/:id - respuesta exitosa
   });
 });
 
-describe('Prueba unitaria del endpoint DELETE /api/users/:id - respuesta errónea', () => {
+describe('Prueba unitaria del endpoint DELETE /users/:id - respuesta errónea', () => {
   test('Debería retornar un status 500 con un mensaje de error', async () => {
     const token =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NDcxNWIyYTM1N2Q2M2FkZDBiMTc2NDYiLCJpYXQiOjE2ODUyMjcwMDl9.FMlruRjos6q7CLW7eB-ir9ZkquCQNypmoXijWYc4Vn4';
