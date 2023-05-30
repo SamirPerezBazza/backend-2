@@ -3,12 +3,12 @@ import Products from '../products/products.model.js';
 
 export const createOrder = async (req, res) => {
   try {
-    const { client, seller, product, amount, comments = '' } = req.body;
+    const { client, product, amount, comments = '' } = req.body;
 
     if (client !== req.userId) return res.status(403).json({ message: 'Forbidden' });
 
     if (!client) return res.status(400).json({ message: 'Client is required' });
-    if (!seller) return res.status(400).json({ message: 'Seller is required' });
+    // if (!seller) return res.status(400).json({ message: 'Seller is required' });
     if (!product) return res.status(400).json({ message: 'Product is required' });
     if (!amount) return res.status(400).json({ message: 'Amount is required' });
 
@@ -18,7 +18,7 @@ export const createOrder = async (req, res) => {
 
     const order = await Orders.create({
       client,
-      seller,
+      seller: dbProduct.userId,
       total,
       product,
       amount,
