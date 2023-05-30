@@ -31,7 +31,7 @@ describe('Prueba unitaria del endpoint POST /orders - respuesta exitosa', () => 
       .set('Authorization', `Bearer ${token}`)
       .send({
         client: '64752c8a37f9362bd3dc4bb3', // ID del cliente
-        seller: '64700c8a37f9362bd3dc4bb3', // ID del vendedor
+        seller: '647523a96d180c30b8de47a6', // ID del vendedor
         product: '647523e46d180c30b8de47aa', // ID del producto
         amount: 2,
         comments: 'Comentarios adicionales',
@@ -43,7 +43,7 @@ describe('Prueba unitaria del endpoint POST /orders - respuesta exitosa', () => 
         message: 'Order created',
         order: expect.objectContaining({
           client: '64752c8a37f9362bd3dc4bb3', // ID del cliente
-          seller: '64700c8a37f9362bd3dc4bb3', // ID del vendedor
+          seller: '647523a96d180c30b8de47a6', // ID del vendedor
           product: '647523e46d180c30b8de47aa', // ID del producto
           amount: 2,
           comments: 'Comentarios adicionales',
@@ -62,7 +62,7 @@ describe('Prueba unitaria del endpoint POST /orders - respuesta errónea', () =>
       .set('Authorization', `Bearer ${token}`)
       .send({
         client: '64752c8a37f9362bd3dc4bb3', // ID del cliente
-        seller: '64700c8a37f9362bd3dc4bb3', // ID del vendedor
+        seller: '647523a96d180c30b8de47a6', // ID del vendedor
         amount: 2,
         comments: 'Comentarios adicionales',
       });

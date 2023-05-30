@@ -80,9 +80,10 @@ describe('Prueba unitaria del método getUserCount (controlador) - respuesta err
 
 describe('Prueba unitaria del método createUser (controlador) - respuesta exitosa', () => {
   test('Debería retornar un usuario y un status 200', async () => {
+    const mail = generateRandomEmail();
     const req = {
       body: {
-        email: 'test@example.com',
+        email: mail,
         phone: '123456789',
         password: 'password123',
         address: [],
@@ -100,7 +101,7 @@ describe('Prueba unitaria del método createUser (controlador) - respuesta exito
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
-        email: 'test@example.com',
+        email: mail,
         phone: '123456789',
         password: 'password123',
         address: [],
@@ -112,7 +113,7 @@ describe('Prueba unitaria del método createUser (controlador) - respuesta exito
 });
 
 describe('Prueba unitaria del método createUser (controlador) - respuesta errónea', () => {
-  test('Debería retornar un status 500 con un mensaje de error', async () => {
+  test('Debería retornar un status 400 con un mensaje de error', async () => {
     const req = {
       body: {
         email: 'test@example.com',
@@ -126,7 +127,7 @@ describe('Prueba unitaria del método createUser (controlador) - respuesta erró
 
     await createUser(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ message: expect.any(String) });
   });
 });
@@ -225,3 +226,11 @@ describe('Prueba unitaria del método deleteUser (controlador) - respuesta erró
     expect(res.json).toHaveBeenCalledWith({ message: expect.any(String) });
   });
 });
+
+function generateRandomEmail() {
+  const name = Math.random().toString(36).substring(2, 10); // Genera un nombre aleatorio
+  const domain = Math.random().toString(36).substring(2, 10); // Genera un dominio aleatorio
+  const email = `${name}@${domain}.com`; // Combina el nombre y el dominio
+
+  return email;
+}

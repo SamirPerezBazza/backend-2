@@ -5,7 +5,6 @@ beforeAll(async () => {
 });
 import app from '../../index.js';
 const http = require('http');
-//create
 
 let server;
 beforeAll((done) => {
@@ -71,8 +70,9 @@ describe('Prueba unitaria del endpoint GET /users/count - respuesta erronea', ()
 //create
 describe('Prueba unitaria del endpoint POST /users - respuesta exitosa', () => {
   test('Debería crear un usuario y retornar un status 200', async () => {
+    const mail = generateRandomEmail();
     const response = await request(app).post('/users/').send({
-      email: 'test@example.com',
+      email: mail,
       phone: '123456789',
       password: 'password123',
       address: [],
@@ -83,7 +83,7 @@ describe('Prueba unitaria del endpoint POST /users - respuesta exitosa', () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual(
       expect.objectContaining({
-        email: 'test@example.com',
+        email: mail,
         phone: '123456789',
         password: 'password123',
         address: [],
@@ -94,13 +94,13 @@ describe('Prueba unitaria del endpoint POST /users - respuesta exitosa', () => {
   });
 });
 describe('Prueba unitaria del endpoint POST /users - respuesta errónea', () => {
-  test('Debería retornar un status 500 con un mensaje de error', async () => {
+  test('Debería retornar un status 400 con un mensaje de error', async () => {
     const response = await request(app).post('/users/').send({
       email: 'test@example.com',
       phone: '123456789',
     });
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(400);
     expect(response.body).toEqual({ message: expect.any(String) });
   });
 });
@@ -181,3 +181,11 @@ describe('Prueba unitaria del endpoint DELETE /users/:id - respuesta errónea', 
     expect(response.body).toEqual({ message: expect.any(String) });
   });
 });
+
+function generateRandomEmail() {
+  const name = Math.random().toString(36).substring(2, 10); // Genera un nombre aleatorio
+  const domain = Math.random().toString(36).substring(2, 10); // Genera un dominio aleatorio
+  const email = `${name}@${domain}.com`; // Combina el nombre y el dominio
+
+  return email;
+}

@@ -30,7 +30,7 @@ describe('Prueba unitaria del método createOrder (controlador) - respuesta exit
       message: 'Order created',
       order: expect.objectContaining({
         client: new mongoose.Types.ObjectId('64752c8a37f9362bd3dc4bb3'), // ID del cliente
-        seller: new mongoose.Types.ObjectId('64700c8a37f9362bd3dc4bb3'), // ID del vendedor
+        seller: new mongoose.Types.ObjectId('647523a96d180c30b8de47a6'), // ID del vendedor
         product: new mongoose.Types.ObjectId('647523e46d180c30b8de47aa'), // ID del producto
         amount: 2,
         comments: 'Comentarios adicionales',
